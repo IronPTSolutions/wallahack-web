@@ -23,13 +23,13 @@ export const createHttp = (useAccessToken = false) => { // Si le pongo true, man
     (response) => response.data,
     (error) => {
       // if (error && err.response && err.response.status) // Codigo equivalente
-      if (error?.response?.status && INVALID_STATUS_CODES.includes(error.response.status)) {
+      if (error?.response?.status && INVALID_STATUS_CODES.includes(error.response.status)) { // Si tengo un error 401, probablemente movida de JWT. Borro el token y te llevo al login
         if (getAccessToken()) {
           logout()
 
-          if (window.location.pathname !== "/login") {
-            window.location.assign("/login");
-          }
+          // if (window.location.pathname !== "/login") {
+          //   window.location.assign("/login");
+          // }
         }
       }
 
