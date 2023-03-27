@@ -21,7 +21,7 @@ export const createHttp = (useAccessToken = false) => { // Si le pongo true, man
 
   http.interceptors.response.use(
     (response) => response.data,
-    (err) => {
+    (error) => {
       // if (error && err.response && err.response.status) // Codigo equivalente
       if (error?.response?.status && INVALID_STATUS_CODES.includes(error.response.status)) {
         if (getAccessToken()) {
@@ -33,7 +33,7 @@ export const createHttp = (useAccessToken = false) => { // Si le pongo true, man
         }
       }
 
-      return Promise.reject(err)
+      return Promise.reject(error)
     }
   )
 

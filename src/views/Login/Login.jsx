@@ -1,6 +1,10 @@
 import { useFormik } from 'formik';
-import FormControl from '../components/FormControl/FormControl';
-import Input from '../components/Input/Input';
+import { useContext } from 'react';
+import FormControl from '../../components/FormControl/FormControl';
+import Input from '../../components/Input/Input';
+import AuthContext from '../../contexts/AuthContext';
+import { login as loginService } from '../../services/AuthService';
+import { setAccessToken } from '../../stores/AccessTokenStore';
 import { loginSchema } from './schemas/login.schema';
 
 const initialValues = {
@@ -9,19 +13,30 @@ const initialValues = {
 }
 
 const Login = () => {
+  const { login } = useContext(AuthContext);
+
   const {
-    values, errors, touched, handleChange, handleBlur, isSubmitting, handleSubmit, setSubmitting
+    values, errors, touched, handleChange, handleBlur,
+    isSubmitting, handleSubmit, setSubmitting, setFieldError
   } = useFormik({
     initialValues: initialValues,
     validateOnBlur: true,
     validateOnChange: false,
     validationSchema: loginSchema,
     onSubmit: (values) => {
-      setTimeout(() => {
-        console.log(values);
-
-        setSubmitting(false)
-      }, 3000);
+      loginService({ email: values.email, password: values.password }) // llama a /login del back pasandole el email y la password
+        .then(response => {
+          // Usar el login del contexto
+          login(response.accessToken);
+        })
+        .catch(err => {
+          if (err?.response?.data?.message) {
+            setFieldError('email', err?.response?.data?.message)
+          } else {
+            setFieldError('email', err.message)
+          }
+          setSubmitting(false)
+        })
 
       // Peticion al back para que me devuelva el JWT
     }
@@ -57,7 +72,7 @@ const Login = () => {
           />
         </FormControl>
 
-        <button className="btn btn-primary" type="submit">
+        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
           {isSubmitting
             ? 'Submitting...'
             : 'Submit'
