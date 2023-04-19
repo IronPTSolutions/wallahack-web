@@ -1,23 +1,33 @@
-import { useFormik } from 'formik';
-import { useContext } from 'react';
-import FormControl from '../../components/FormControl/FormControl';
-import Input from '../../components/Input/Input';
-import AuthContext from '../../contexts/AuthContext';
-import { login as loginService } from '../../services/AuthService';
-import { setAccessToken } from '../../stores/AccessTokenStore';
-import { loginSchema } from './schemas/login.schema';
+import { useFormik } from "formik";
+import { useContext } from "react";
+import { Navigate } from "react-router-dom";
+import FormControl from "../../components/FormControl/FormControl";
+import Input from "../../components/Input/Input";
+import AuthContext from "../../contexts/AuthContext";
+import { login as loginService } from "../../services/AuthService";
+import { setAccessToken } from "../../stores/AccessTokenStore";
+import { loginSchema } from "../../utils/schemas/login.schema";
 
 const initialValues = {
-  email: '',
-  password: ''
-}
+  email: "",
+  password: "",
+};
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
-
+  const { login, currentUser } = useContext(AuthContext);
+  if (currentUser) {
+    return <Navigate to="/profile" />;
+  }
   const {
-    values, errors, touched, handleChange, handleBlur,
-    isSubmitting, handleSubmit, setSubmitting, setFieldError
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    isSubmitting,
+    handleSubmit,
+    setSubmitting,
+    setFieldError,
   } = useFormik({
     initialValues: initialValues,
     validateOnBlur: true,
@@ -25,21 +35,20 @@ const Login = () => {
     validationSchema: loginSchema,
     onSubmit: (values) => {
       loginService({ email: values.email, password: values.password }) // llama a /login del back pasandole el email y la password
-        .then(response => {
+        .then((response) => {
           // Usar el login del contexto
           login(response.accessToken);
         })
-        .catch(err => {
+        .catch((err) => {
           if (err?.response?.data?.message) {
-            setFieldError('email', err?.response?.data?.message)
+            setFieldError("email", err?.response?.data?.message);
           } else {
-            setFieldError('email', err.message)
+            setFieldError("email", err.message);
           }
-          setSubmitting(false)
-        })
-
+          setSubmitting(false);
+        });
       // Peticion al back para que me devuelva el JWT
-    }
+    },
   });
 
   return (
@@ -47,7 +56,11 @@ const Login = () => {
       <h1>Login</h1>
 
       <form onSubmit={handleSubmit}>
-        <FormControl text="Email" error={touched.email && errors.email} htmlFor="email">
+        <FormControl
+          text="Email"
+          error={touched.email && errors.email}
+          htmlFor="email"
+        >
           <Input
             id="email"
             name="email"
@@ -59,7 +72,11 @@ const Login = () => {
           />
         </FormControl>
 
-        <FormControl text="Password" error={touched.password && errors.password} htmlFor="password">
+        <FormControl
+          text="Password"
+          error={touched.password && errors.password}
+          htmlFor="password"
+        >
           <Input
             id="password"
             name="password"
@@ -72,15 +89,16 @@ const Login = () => {
           />
         </FormControl>
 
-        <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? 'Submitting...'
-            : 'Submit'
-          }
+        <button
+          className="btn btn-primary"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </form>
     </div>
-  )
-}
+  );
+};
 
 export default Login;
